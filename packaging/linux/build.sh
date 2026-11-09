@@ -22,19 +22,18 @@ mkdir -p "$share/launcher"
 icon=launcher/p3d.png
 [[ -f packaging/linux/p3d.png ]] && icon=packaging/linux/p3d.png
 install -m644 "$icon" "$share/launcher/p3d.png"
-install -m644 launcher/Cinzel-Black.ttf "$share/launcher/Cinzel-Black.ttf"
-install -m644 launcher/OFL-Cinzel.txt "$share/launcher/OFL-Cinzel.txt"
+install -m644 launcher/brand.ttf launcher/brand-OFL.txt launcher/logo.png "$share/launcher/"
 
 # The launcher also runs run.py (--run) and the preparation scripts (--script) itself, as on
 # Windows: the standard modules those scripts import come along as hidden imports.
 # iced-x86 (pip install iced-x86==1.21.0): scripts/isa_rewrite.py, CPUs without MOVBE/BMI1/LZCNT.
 hidden=()
-for module in argparse base64 collections hashlib json re shutil struct tempfile xml.etree.ElementTree \
+for module in argparse base64 collections hashlib json re shutil socket struct tempfile threading uuid xml.etree.ElementTree \
               urllib.request iced_x86; do
     hidden+=(--hidden-import "$module")
 done
 python3 -c 'import iced_x86' || { echo 'Need iced-x86: pip install iced-x86==1.21.0' >&2; exit 1; }
-python3 -m PyInstaller --noconfirm --clean --log-level WARN --windowed --name p3d-launcher \
+python3 -m PyInstaller --noconfirm --clean --log-level WARN --windowed --copy-metadata pillow --name p3d-launcher \
     --distpath out/pyi-dist --workpath out/pyi-work --specpath out/pyi-work \
     --paths "$PWD/scripts" "${hidden[@]}" "$PWD/launcher/p3d_launcher_win.py"
 cp -r out/pyi-dist/p3d-launcher/. "$share/"
